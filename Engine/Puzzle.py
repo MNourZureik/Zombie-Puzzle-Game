@@ -1,0 +1,268 @@
+import collections
+import collections.abc
+
+collections.Mapping = collections.abc.Mapping
+
+from experta import KnowledgeEngine, Rule, TEST, MATCH, NOT, AS
+from Facts.Bridge import Bridge
+from Facts.Goal import Goal
+from Facts.Visited import Visited
+from RulesDecorators.MovePairRule import move_pair
+from RulesDecorators.ReturnOneRule import return_one
+
+
+class Puzzle(KnowledgeEngine):
+    people = ["Me", "Lab Assistant", "Worker", "Scientist"]
+    people_time = {
+        people[0]: 1,
+        people[1]: 2,
+        people[2]: 5,
+        people[3]: 10,
+    }
+
+    def _move_two_persons_to_the_right(
+        self, left, right, time, original_path, added_path, person1, person2, time_step
+    ):
+        new_left = list(left)
+        new_right = list(right)
+        new_path = list(original_path) + added_path
+
+        new_left.remove(person1)
+        new_left.remove(person2)
+        new_right.append(person1)
+        new_right.append(person2)
+
+        new_time = time + time_step
+
+        self.declare(
+            Bridge(
+                left=new_left,
+                right=new_right,
+                light="right",
+                time=new_time,
+                path=new_path,
+            )
+        )
+
+    def _return_one_person_back(
+        self, left, right, original_path, added_path, time, time_step, person_returned
+    ):
+        new_left = list(left)
+        new_right = list(right)
+
+        new_left.append(person_returned)
+        new_right.remove(person_returned)
+
+        new_time = time + time_step
+        new_path = list(original_path) + added_path
+
+        self.declare(
+            Bridge(
+                left=new_left,
+                right=new_right,
+                light="left",
+                time=new_time,
+                path=new_path,
+            )
+        )
+
+    # ---------------------
+    # Move Two Left to Right
+    # ---------------------
+
+    # 1. You and Lab Assistant (2 minutes to pass)
+    @move_pair(people[0], people[1])
+    def move_you_and_lab_assistant(self, left, right, time, path):
+        self._move_two_persons_to_the_right(
+            left=left,
+            right=right,
+            time=time,
+            time_step=2,
+            original_path=path,
+            added_path=[f"{self.people[0]} and {self.people[1]} crossed"],
+            person1=self.people[0],
+            person2=self.people[1],
+        )
+
+    # 2. You and Worker (5 minutes to pass)
+    @move_pair(people[0], people[2])
+    def move_you_and_worker(self, left, right, time, path):
+        self._move_two_persons_to_the_right(
+            left=left,
+            right=right,
+            time=time,
+            time_step=5,  # self.return_slowest_person(0 , 2),
+            original_path=path,
+            added_path=[f"{self.people[0]} and {self.people[2]} crossed"],
+            person1=self.people[0],
+            person2=self.people[2],
+        )
+
+    # # 3. You + Scientist (10 minutes)
+    @move_pair(people[0], people[3])
+    def move_you_and_scientist(self, left, right, time, path):
+        self._move_two_persons_to_the_right(
+            left=left,
+            right=right,
+            time=time,
+            time_step=10,  # self.return_slowest_person(0 , 3),
+            original_path=path,
+            added_path=[f"{self.people[0]} and {self.people[3]} crossed"],
+            person1=self.people[0],
+            person2=self.people[3],
+        )
+
+    # # 4. Lab Assistant + Worker (5 minutes)
+    @move_pair(people[1], people[2])
+    def move_lab_assistant_and_worker(self, left, right, time, path):
+        self._move_two_persons_to_the_right(
+            left=left,
+            right=right,
+            time=time,
+            time_step=5,  # self.return_slowest_person(1 , 2),
+            original_path=path,
+            added_path=[f"{self.people[1]} and {self.people[2]} crossed"],
+            person1=self.people[1],
+            person2=self.people[2],
+        )
+
+    # # 5. Lab Assistant + Scientist (10 minutes)
+    @move_pair(people[1], people[3])
+    def move_lab_assistant_and_scientist(self, left, right, time, path):
+        self._move_two_persons_to_the_right(
+            left=left,
+            right=right,
+            time=time,
+            time_step=10,  # self.return_slowest_person(1 , 3),
+            original_path=path,
+            added_path=[f"{self.people[1]} and {self.people[3]} crossed"],
+            person1=self.people[1],
+            person2=self.people[3],
+        )
+
+    # 6. Worker + Scientist (10 minutes)
+    @move_pair(people[2], people[3])
+    def move_worker_and_scientist(self, left, right, time, path):
+        # print(# self.return_slowest_person())
+        self._move_two_persons_to_the_right(
+            left=left,
+            right=right,
+            time=time,
+            time_step=10,  # self.return_slowest_person(2 , 3),
+            original_path=path,
+            added_path=[f"{self.people[2]} and {self.people[3]} crossed"],
+            person1=self.people[2],
+            person2=self.people[3],
+        )
+
+    # # ---------------------
+    # # Return From Right to Left
+    # # ---------------------
+
+    # 1. you returned (1 minute)
+    @return_one(people[0])
+    def return_you(self, left, right, time, path):
+        self._return_one_person_back(
+            left=left,
+            right=right,
+            original_path=path,
+            added_path=[f"{self.people[0]} returned alone"],
+            time=time,
+            time_step=self.people_time[self.people[0]],
+            person_returned=self.people[0],
+        )
+
+    # 2. lab_assistant returned (2 minute)
+    @return_one(people[1])
+    def return_lab_assistant(self, left, right, time, path):
+        self._return_one_person_back(
+            left=left,
+            right=right,
+            original_path=path,
+            added_path=[f"{self.people[1]} returned alone"],
+            time=time,
+            time_step=self.people_time[self.people[1]],
+            person_returned=self.people[1],
+        )
+
+    # 3. worker returned (5 minute)
+    @return_one(people[2])
+    def return_worker(self, left, right, time, path):
+        self._return_one_person_back(
+            left=left,
+            right=right,
+            original_path=path,
+            added_path=[f"{self.people[2]} returned alone"],
+            time=time,
+            time_step=self.people_time[self.people[2]],
+            person_returned=self.people[2],
+        )
+
+    # 4. scientist returned (10 minute)
+    @return_one(people[3])
+    def return_scientist(self, left, right, time, path):
+        self._return_one_person_back(
+            left=left,
+            right=right,
+            original_path=path,
+            added_path=[f"{self.people[3]} returned alone"],
+            time=time,
+            time_step=self.people_time[self.people[3]],
+            person_returned=self.people[3],
+        )
+
+    # ---------------------
+    # Prevent Duplicate States
+    # ---------------------
+    @Rule(
+        Bridge(left=MATCH.left, right=MATCH.right, light=MATCH.light),
+        NOT(Visited(state_hash=MATCH.hash_code)),
+    )
+    def add_state_to_visited(self, left, right, light):
+        hash_code = str(sorted(left)) + str(sorted(right)) + light
+        self.declare(Visited(state_hash=hash_code))
+
+    @Rule(
+        AS.bs << Bridge(left=MATCH.left, right=MATCH.right, light=MATCH.light),
+        Visited(state_hash=MATCH.hash_code),
+        TEST(
+            lambda left, right, light, hash_code: (
+                str(sorted(left)) + str(sorted(right)) + light
+            )
+            == hash_code
+        ),
+    )
+    def delete_duplicate_state(self, bs):
+        self.retract(bs)
+
+    # ---------------------
+    # Time Limit Check
+    # ---------------------
+    @Rule(
+        AS.bs << Bridge(time=MATCH.time),
+        TEST(lambda time: time > 17),
+    )
+    def time_exceeded(self, bs):
+        self.retract(bs)
+
+    # ---------------------
+    # Check Goal State
+    # ---------------------
+    @Rule(
+        Bridge(
+            left=MATCH.left,
+            right=MATCH.right,
+            light="right",
+            time=MATCH.time,
+            path=MATCH.path,
+        ),
+        TEST(lambda left: len(left) == 0),
+        TEST(lambda time: time <= 17),
+        salience=10
+    )
+    def goal_reached(self, time, path):
+        goal = Goal(path=path, time=time)
+        self.declare(goal)
+        goal.print_path(time=time , path=path)
+        print(f"facts number in the search tree : {len(self.facts)}")
+        self.halt()
