@@ -5,7 +5,6 @@ collections.Mapping = collections.abc.Mapping
 
 from experta import Fact, Field
 
-
 class Bridge(Fact):
     """
 
@@ -23,3 +22,4 @@ class Bridge(Fact):
     light = Field(str, mandatory=True, default="")
     time = Field(int, mandatory=True, default=0)
     path = Field(list, mandatory=True, default=lambda: [])
+    

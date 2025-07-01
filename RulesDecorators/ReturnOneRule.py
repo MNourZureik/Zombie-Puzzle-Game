@@ -3,7 +3,7 @@ from experta import *
 from Facts.Bridge import Bridge
 
 
-def return_one(person , salience=0):
+def return_one(person):
     def rule_decorator(func):
         return Rule(
             Bridge(
@@ -15,7 +15,7 @@ def return_one(person , salience=0):
             ),
             TEST(lambda right: person in right and len(right) > 1),
             TEST(lambda left: person not in left),
-            salience=salience,
+            salience=3
         )(func)
 
     return rule_decorator
