@@ -16,33 +16,38 @@ def print_search_tree(facts):
     levels = {}
     for fact in facts.values():
         if isinstance(fact, Log):
-            level = fact["level"]
+            level = fact.get("level", -1)
             if level not in levels:
                 levels[level] = []
             levels[level].append(fact)
 
-    # Sort levels by level number
     sorted_levels = sorted(levels.keys())
 
-    # Print nodes for each level
     for level in sorted_levels:
-        print(f"\n--- Level {level} ---")
+        print(f"\n┌─── Level {level} ────────{"─" * (80 - 15)}┐")
+        
         if not levels[level]:
-            print("  (No nodes at this level)")
+            print("│  (No nodes at this level)                                                               │")
+            print(f"└{"─" * 80}┘")
             continue
 
         for i, fact in enumerate(levels[level]):
-            # Visual cues for the list
-            connector = "└── " if i == len(levels[level]) - 1 else "├── "
-
-            # State information
             state_info = f"Left: {list(fact['left'])}, Right: {list(fact['right'])}, Light: {fact['light']}, Time: {fact['time']}"
+            move_info = f"Action: {fact['path'][-1]}" if fact["path"] else "Action: Initial State"
+            
+            # Padding for alignment
+            state_info_padded = state_info.ljust(60)
+            move_info_padded = move_info.ljust(38)
 
-            # Action that led to this state
-            move_info = ""
-            if fact["path"]:
-                move_info = f"Action: {fact['path'][-1]}"
+            if i == 0:
+                print(f"│ ┌─ Node {i+1} ─┐")
             else:
-                move_info = "Action: Initial State"
+                print(f"│ ├─ Node {i+1} ─┤")
 
-            print(f"{connector}{state_info} - {move_info}")
+            print(f"│ │ State: {state_info_padded} │")
+            print(f"│ │ Move:  {move_info_padded} │")
+
+            if i == len(levels[level]) - 1:
+                print(f"│ └────────┘")
+
+        print(f"└{"─" * 80}┘")

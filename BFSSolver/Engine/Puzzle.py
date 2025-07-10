@@ -139,9 +139,11 @@ class Puzzle(KnowledgeEngine):
 
     # Expand all possible moves when the light on the left :
     @Rule(
-        AS.b << Bridge(light=L("left"), level=MATCH.level, processed=True),
+        AS.b
+        << Bridge(left=MATCH.left, light=L("left"), level=MATCH.level, processed=True),
         CurrentLevel(level=MATCH.level),
         TEST(lambda b: NOT(Visited(state_hash=b["state_hash"])) and b["time"] <= 17),
+        TEST(lambda left: len(left) > 1),
         salience=5,
     )
     def expand_moves_for_left_light(self, b):
@@ -150,9 +152,16 @@ class Puzzle(KnowledgeEngine):
 
     # Expand all possible moves when the light on the right :
     @Rule(
-        AS.b << Bridge(light=L("right"), level=MATCH.level, processed=True),
+        AS.b
+        << Bridge(
+            right=MATCH.right, light=L("right"), level=MATCH.level, processed=True
+        ),
         CurrentLevel(level=MATCH.level),
-        TEST(lambda b: NOT(Visited(state_hash=b["state_hash"])) and b["time"] <= 17),
+        TEST(
+            lambda b: NOT(Visited(state_hash=b["state_hash"]))
+            and b["time"] <= 17
+        ),
+        TEST(lambda right: len(right) > 0),
         salience=5,
     )
     def expand_moves_for_right_light(self, b):
@@ -173,6 +182,7 @@ class Puzzle(KnowledgeEngine):
     @Rule(
         AS.b << Bridge(time=MATCH.t, left=MATCH.l),
         TEST(lambda t, l: t <= 17 and len(l) == 0),
+        salience=10,
     )
     def goal(self, b):
         self.solution_found = {"time": b["time"], "path": b["path"]}
