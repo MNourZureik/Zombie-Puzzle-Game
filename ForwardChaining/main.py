@@ -9,7 +9,6 @@ from ForwardChaining.Facts.Bridge import Bridge
 from ForwardChaining.Facts.Goal import Goal
 from ForwardChaining.Utils.PrettyPrint import print_path, print_search_tree
 
-
 initial_left = ["Me", "Lab Assistant", "Worker", "Scientist"]
 initial_right = []
 initial_light = "left"

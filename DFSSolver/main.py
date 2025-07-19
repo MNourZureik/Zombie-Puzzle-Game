@@ -5,15 +5,25 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from DFSSolver.Engine.Puzzle import Puzzle
 from DFSSolver.Utils.PrettyPrint import print_path, pretty_search_tree
+while True:
+    user_desire = input(
+        "Do you want to print the whole tree or not? (y/n): "
+    ).lower()
+    if user_desire in ["y", "n"]:
+        break
+if user_desire == "y":
+    FIND_ALL_SOLUTIONS = True
+else:
+    FIND_ALL_SOLUTIONS = False
 
-
-en = Puzzle()
+en = Puzzle(find_all_solutions=FIND_ALL_SOLUTIONS)
 en.reset()
-en.run()
 
 print("=========================================================================================================")
-print("Running the puzzle solver to find a solution using DFS...")
-
+print(
+    f"Running the puzzle solver to find {'all solutions' if FIND_ALL_SOLUTIONS else 'a solution'} using DFS..."
+)
+en.run()
 print("Solver has finished.")
 print("=========================================================================================================")
 

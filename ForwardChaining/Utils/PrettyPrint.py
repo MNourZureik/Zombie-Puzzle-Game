@@ -4,7 +4,7 @@ from ForwardChaining.Facts.TimeExceeded import TimeExceeded
 def print_path(time, path):
     print(f"\nTime Estimated : {time} minutes.")
     print("Decisions :")
-    print("*")  # Separator for clarity
+    print("*")  
     for i, step in enumerate(path, start=1):
         print(f"Decision {i}: {step}")
     print("*")
@@ -27,27 +27,22 @@ def print_search_tree(facts):
     def print_node(node, indent="", is_last=True):
         fact = node["fact"]
 
-        # Visual cues for the tree structure
         connector = "└── " if is_last else "├── "
 
-        # Constructing the output string for each node
         level_info = f"Level {fact['level']}"
         state_info = f"Left: {list(fact['left'])}, Right: {list(fact['right'])}, Light: {fact['light']}, Time: {fact['time']}"
 
-        # Path information gives context on the move made
         move_info = ""
         if fact["path"]:
             move_info = f"Action: {fact['path'][-1]}"
 
         print(f"{indent}{connector}{level_info} - {state_info} - {move_info}")
 
-        # Adjust the indent for children nodes
         child_indent = indent + ("    " if is_last else "│   ")
 
         for i, child in enumerate(node["children"]):
             print_node(child, child_indent, i == len(node["children"]) - 1)
 
-    # Find and print the root of the tree
     for node in nodes.values():
         if node["fact"]["parent_hash"] is None:
             print_node(node)

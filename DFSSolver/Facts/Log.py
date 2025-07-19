@@ -1,4 +1,5 @@
 from experta import Fact, Field
+from schema import Or
 
 class Log(Fact):
     
@@ -7,3 +8,5 @@ class Log(Fact):
     light = Field(str, mandatory=True, default="")
     time = Field(int, mandatory=True, default=0)
     path = Field(list, mandatory=True, default=lambda: [])
+    state_hash = Field(str, mandatory=False)
+    parent_hash = Field(Or(str, None), mandatory=False, default=None)
